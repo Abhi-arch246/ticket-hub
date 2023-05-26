@@ -5,22 +5,22 @@ import { RegisterUser } from "../api/users";
 
 function Register() {
   const [type, setType] = useState("User");
-  const [data, setData] = useState({});
+  const [formData, setFormData] = useState({});
 
   const updateData = (e) => {
-    setData({
-      ...data,
+    setFormData({
+      ...formData,
       [e.target.name]: e.target.value,
     });
   };
   const registerSubmit = async (e) => {
     e.preventDefault();
-    data.userType = type;
+    formData.userType = type;
     try {
-      if (data.password === data.cpassword) {
-        delete data.cpassword;
+      if (formData.password === formData.cpassword) {
+        delete formData.cpassword;
 
-        const response = await RegisterUser({ data });
+        const response = await RegisterUser({ formData });
         if (response.success) {
           toast.success(response.message);
         } else {

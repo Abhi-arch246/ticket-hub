@@ -3,11 +3,12 @@ const router = express.Router();
 const bcrypt = require("bcryptjs");
 const User = require("../models/userModel");
 const jwt = require("jsonwebtoken");
+const authMiddleware = require("../middleware/authMiddleware");
 
 // register user
 router.post("/register", async (req, res) => {
   try {
-    const userExists = await User.findOne({ email: req.body.data.email });
+    const userExists = await User.findOne({ email: req.body.formData.email });
     if (userExists) {
       return res.send({
         success: false,
@@ -15,10 +16,12 @@ router.post("/register", async (req, res) => {
       });
     } else {
       const salt = await bcrypt.genSalt(10);
-      const hashedPassword = await bcrypt.hash(req.body.data.password, salt);
-
-      req.body.data.password = hashedPassword;
-      const user = new User(req.body.data);
+      const hashedPassword = await bcrypt.hash(
+        req.body.formData.password,
+        salt
+      );
+      req.body.formData.password = hashedPassword;
+      const user = new User(req.body.formData);
       await user.save();
 
       return res.send({
@@ -37,7 +40,7 @@ router.post("/register", async (req, res) => {
 // login user
 router.post("/login", async (req, res) => {
   try {
-    const userExists = await User.findOne({ email: req.body.data.email });
+    const userExists = await User.findOne({ email: req.body.formData.email });
     if (!userExists) {
       return res.send({
         success: false,
@@ -45,7 +48,7 @@ router.post("/login", async (req, res) => {
       });
     } else {
       const checkPassword = await bcrypt.compare(
-        req.body.data.password,
+        req.body.formData.password,
         userExists.password
       );
 
@@ -68,6 +71,25 @@ router.post("/login", async (req, res) => {
         });
       }
     }
+  } catch (error) {
+    return res.send({
+      success: false,
+      message: error.message,
+    });
+  }
+});
+
+// current user info
+router.get("/get-current-user", authMiddleware, async (req, res) => {
+  try {
+    // const user = await User.findOne({ _id: req.body.userId });
+    // delete user.password;
+    console.log(req.body.userId);
+    return res.send({
+      success: true,
+      message: "Data fetched successfully",
+      data: req.body.userId,
+    });
   } catch (error) {
     return res.send({
       success: false,

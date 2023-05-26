@@ -1,26 +1,29 @@
 import React, { useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { LoginUser } from "../api/users";
 import toast, { Toaster } from "react-hot-toast";
 
 function Login() {
   const [type, setType] = useState("User");
-  const [data, setData] = useState({});
+  const [formData, setFormData] = useState({});
+  const navigate = useNavigate();
 
   const updateData = (e) => {
-    setData({
-      ...data,
+    setFormData({
+      ...formData,
       [e.target.name]: e.target.value,
     });
   };
 
   const loginSubmit = async (e) => {
     e.preventDefault();
-    data.userType = type;
+    formData.userType = type;
     try {
-      const response = await LoginUser({ data });
+      const response = await LoginUser({ formData });
       if (response.success) {
         toast.success(response.message);
+        localStorage.setItem("auth", response.data);
+        navigate("/home");
       } else {
         toast.error(response.message);
       }
